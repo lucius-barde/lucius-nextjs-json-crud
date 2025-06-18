@@ -10,7 +10,7 @@ const LoginForm = () => {
     e.preventDefault();
     setError(null);
     const formData = new FormData(e.target);
-    const res = await fetch('/api/login', {
+    const res = await fetch('/login', {
       method: 'POST',
       body: formData,
     });

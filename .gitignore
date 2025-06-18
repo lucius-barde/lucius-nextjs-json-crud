@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # config of this app
-/app/api/login/config.js
+/app/login/config.js
 
 # dependencies
 /node_modules
