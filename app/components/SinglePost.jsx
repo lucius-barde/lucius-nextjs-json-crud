@@ -1,0 +1,58 @@
+"use client"
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+
+const SinglePost = () => {
+    const { id } = useParams();
+    const [post, setPost] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+  
+    // Copy-pasted from AdminPostList.jsx
+    useEffect(() => {
+      async function fetchPost() {
+        try {
+          const res = await fetch(`/api/post/${id}`);
+          if (!res.ok) throw new Error('Failed to fetch post');
+          const data = await res.json();
+          setPost(data);
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      }
+      if (id) fetchPost();
+    }, [id]);
+
+    // Copy-pasted from AdminPostList.jsx
+    // Helper to format timestamp
+    function formatDate(ts) {
+        if (!ts) return '';
+        const date = new Date(Number(ts));
+        const pad = n => n.toString().padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    }
+
+
+    if (loading) return <main className="flex flex-col gap-[32px] p-8 items-center sm:items-start flex-1"><div>Loading...</div></main>;
+    if (error) return <main className="flex flex-col gap-[32px] p-8 items-center sm:items-start flex-1"><div>Error: {error}</div></main>;
+    if (!post) return <main className="flex flex-col gap-[32px] p-8 items-center sm:items-start flex-1"><div>This post does not exist.</div></main>;
+
+    return(
+    
+        <main className="flex flex-col gap-[32px] p-8 items-center sm:items-start flex-1">
+            <section id="blog">
+            <div className="w-full overflow-x-auto">
+                    <article className='mt-8 mb-8'>
+                        <h1 className='text-2xl font-bold'>{post.name}</h1>
+                        <p className='text-sm text-gray-600'>{formatDate(post.created)}</p> 
+                        <p className=''>{post.content}</p> 
+                    </article>
+                </div>
+            </section>
+        </main>
+    )
+}
+
+export default SinglePost;
