@@ -36,12 +36,12 @@ export async function PUT(request, { params }) {
   try {
     const { id } = params;
     const requestBody = await request.json();
-    const { url } = requestBody;
+    const { name, url, content } = requestBody;
     
-    // Validate that url is provided
-    if (!url) {
+    // Validate that all required fields are provided
+    if (!name || !url || !content) {
       return NextResponse.json(
-        { error: 'URL parameter is required' },
+        { error: 'Name, URL, and content are required' },
         { status: 400 }
       );
     }
@@ -60,9 +60,9 @@ export async function PUT(request, { params }) {
       );
     }
     
-    // Update the post's URL
-    dbData.posts[postIndex].url = url;
+    // Update the post
     dbData.posts[postIndex].name = name;
+    dbData.posts[postIndex].url = url;
     dbData.posts[postIndex].content = content;
     dbData.posts[postIndex].edited = Date.now();
     

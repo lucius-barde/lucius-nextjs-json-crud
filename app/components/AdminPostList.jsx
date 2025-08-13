@@ -1,5 +1,6 @@
 "use client"
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 const AdminPostList = () => {
   const [posts, setPosts] = useState([]);
@@ -45,6 +46,7 @@ const AdminPostList = () => {
             <th className="px-4 py-2 border">Content</th>
             <th className="px-4 py-2 border">Created</th>
             <th className="px-4 py-2 border">Edited</th>
+            <th className="px-4 py-2 border">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -56,6 +58,10 @@ const AdminPostList = () => {
               <td className="px-4 py-2 border">{post.content.length > 60 ? post.content.slice(0, 60) + '…' : post.content}</td>
               <td className="px-4 py-2 border">{formatDate(post.created)}</td>
               <td className="px-4 py-2 border">{formatDate(post.edited)}</td>
+              <td className="px-4 py-2 border">
+                <Link href={`/admin/post/edit/${post.id}`} className="bg-blue-500 text-white rounded-md m-2 p-2">Edit</Link>
+                <Link href={`/admin/post/delete/${post.id}`} className="bg-red-500 text-white rounded-md p-2">Delete</Link>
+              </td>
             </tr>
           ))}
         </tbody>

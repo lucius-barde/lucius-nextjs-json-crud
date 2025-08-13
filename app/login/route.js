@@ -1,7 +1,26 @@
 import { NextResponse } from 'next/server';
-import { ADMIN_USERNAME, ADMIN_PASSWORD } from '/app/login/config';
+
+// Import the config file if it exists, otherwise display an error
+let ADMIN_USERNAME, ADMIN_PASSWORD;
+
+try {
+  const config = await import('/app/login/config');
+  ADMIN_USERNAME = config.ADMIN_USERNAME;
+  ADMIN_PASSWORD = config.ADMIN_PASSWORD;
+} catch (error) {
+  // Set default values or leave undefined to handle in the function
+  console.error('Config file not found:', error.message);
+}
 
 export async function POST(request) {
+  // Check if config was loaded successfully
+  if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Error: cannot login because config.js doesn\'t exist. Please contact your website administrator.' 
+    }, { status: 500 });
+  }
+
   const formData = await request.formData();
   const username = formData.get('login');
   const password = formData.get('password');
