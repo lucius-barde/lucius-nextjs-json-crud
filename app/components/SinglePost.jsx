@@ -45,7 +45,7 @@ const SinglePost = () => {
             <section id="blog">
             <div className="w-full overflow-x-auto">
                     <article className='mt-8 mb-8'>
-                        <h1 className='text-2xl font-bold'>{post.name}</h1>
+                        <h1 className='text-4xl font-bold'>{post.name}</h1>
                         <p className='text-sm text-gray-600'>{formatDate(post.created)}</p> 
                         <p className=''>{post.content}</p> 
                     </article>

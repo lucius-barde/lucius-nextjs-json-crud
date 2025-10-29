@@ -40,9 +40,10 @@ const PostList = () => {
   return (
    <section id="blog">
       <div className="w-full overflow-x-auto">
+        <h2 className="text-2xl font-bold">Latest posts</h2>
     {posts.map(post => (
          <article key={post.id} className='mt-8 mb-8'>
-         <h3 className='text-xl font-semibold mb-2'>{post.name}</h3>
+         <h3 className='text-xl font-semibold mb-2'><a href={`/post/${post.id}`}>{post.name}</a></h3>
          <p className='text-sm text-gray-600'>{formatDate(post.created)}</p> 
  
          <div>
