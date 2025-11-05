@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { getPostsDb } from '../../../db/sqlite';
+
+export const runtime = 'nodejs';
 
 export async function POST(request) {
   try {
@@ -15,13 +16,9 @@ export async function POST(request) {
       );
     }
     
-    // Read the database file
-    const dbPath = path.join(process.cwd(), 'app', 'db', 'posts.json');
-    const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-    
-    // Find the highest ID to increment
-    const maxId = Math.max(...dbData.posts.map(post => post.id), 0);
-    const newId = maxId + 1;
+    const db = getPostsDb();
+    const maxIdRow = db.prepare('SELECT COALESCE(MAX(id), 0) as maxId FROM posts').get();
+    const newId = (maxIdRow?.maxId || 0) + 1;
     
     // Create new post entry
     const newpost = {
@@ -33,11 +30,10 @@ export async function POST(request) {
       edited: Date.now()
     };
     
-    // Add to posts array
-    dbData.posts.push(newpost);
-    
-    // Write back to database file
-    fs.writeFileSync(dbPath, JSON.stringify(dbData, null, 4));
+    db.prepare(`
+      INSERT INTO posts (id, url, name, content, created, edited)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(newId, url, name, content, newpost.created, newpost.edited);
     
     // Return the created post
     return NextResponse.json(newpost, { status: 201 });

@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
-import path from 'path';
-import { promises as fs } from 'fs';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { getUsersDb, mapUserRow } from '../db/sqlite';
 
-async function readUsersFromJson() {
-  const dbPath = path.join(process.cwd(), 'app', 'db', 'users.json');
-  const file = await fs.readFile(dbPath, 'utf-8');
-  const parsed = JSON.parse(file);
-  return Array.isArray(parsed?.users) ? parsed.users : [];
+export const runtime = 'nodejs';
+
+async function readUsersFromDb() {
+  const db = getUsersDb();
+  const rows = db.prepare('SELECT * FROM users').all();
+  return rows.map(mapUserRow);
 }
 
 function normalizeString(value) {
@@ -53,7 +53,7 @@ export async function POST(request) {
       return NextResponse.json({ success: false, error: 'Missing credentials' }, { status: 400 });
     }
 
-    const users = await readUsersFromJson();
+    const users = await readUsersFromDb();
     const user = users.find(u => {
       const email = normalizeString(u.email);
       const name = normalizeString(u.name);

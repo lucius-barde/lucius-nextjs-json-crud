@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
 import bcrypt from 'bcryptjs';
+import { getUsersDb, mapUserRow } from '../../../db/sqlite';
+
+export const runtime = 'nodejs';
 
 export async function GET(request, { params }) {
   try {
     const { id } = params;
-    const dbPath = path.join(process.cwd(), 'app', 'db', 'users.json');
-    const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-    const user = dbData.users.find(user => user.id === parseInt(id));
+    const db = getUsersDb();
+    const row = db.prepare('SELECT * FROM users WHERE id = ?').get(parseInt(id));
+    const user = mapUserRow(row);
 
     if (!user) {
       return NextResponse.json(
@@ -42,18 +43,16 @@ export async function PUT(request, { params }) {
       );
     }
 
-    const dbPath = path.join(process.cwd(), 'app', 'db', 'users.json');
-    const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-
-    const userIndex = dbData.users.findIndex(user => user.id === parseInt(id));
-    if (userIndex === -1) {
+	const db = getUsersDb();
+	const existingRow = db.prepare('SELECT * FROM users WHERE id = ?').get(parseInt(id));
+	if (!existingRow) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       );
     }
 
-    const existing = dbData.users[userIndex];
+	const existing = mapUserRow(existingRow);
 
     const isBcryptHash = (value) => typeof value === 'string' && value.startsWith('$2');
     let nextPassword = existing.password;
@@ -66,8 +65,7 @@ export async function PUT(request, { params }) {
       }
     }
 
-    dbData.users[userIndex] = {
-      ...existing,
+    const updated = {
       url,
       name,
       email,
@@ -75,12 +73,25 @@ export async function PUT(request, { params }) {
       password: nextPassword,
       role: role ?? existing.role,
       status: status ?? existing.status,
-      permissions: Array.isArray(permissions) ? permissions : existing.permissions,
+      permissions: JSON.stringify(Array.isArray(permissions) ? permissions : existing.permissions),
       edited: Date.now()
     };
+    db.prepare(`
+      UPDATE users
+      SET url = @url,
+          name = @name,
+          email = @email,
+          description = @description,
+          password = @password,
+          role = @role,
+          status = @status,
+          permissions = @permissions,
+          edited = @edited
+      WHERE id = @id
+    `).run({ ...updated, id: parseInt(id) });
 
-    fs.writeFileSync(dbPath, JSON.stringify(dbData, null, 4));
-    return NextResponse.json(dbData.users[userIndex], { status: 200 });
+    const after = db.prepare('SELECT * FROM users WHERE id = ?').get(parseInt(id));
+    return NextResponse.json(mapUserRow(after), { status: 200 });
   } catch (error) {
     console.error('Error updating user:', error);
     return NextResponse.json(
@@ -93,20 +104,17 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { id } = params;
-    const dbPath = path.join(process.cwd(), 'app', 'db', 'users.json');
-    const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-
-    const userIndex = dbData.users.findIndex(user => user.id === parseInt(id));
-    if (userIndex === -1) {
+    const db = getUsersDb();
+    const row = db.prepare('SELECT * FROM users WHERE id = ?').get(parseInt(id));
+    if (!row) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       );
     }
 
-    const deletedUser = dbData.users[userIndex];
-    dbData.users.splice(userIndex, 1);
-    fs.writeFileSync(dbPath, JSON.stringify(dbData, null, 4));
+    const deletedUser = mapUserRow(row);
+    db.prepare('DELETE FROM users WHERE id = ?').run(parseInt(id));
 
     return NextResponse.json({
       message: 'User deleted successfully',

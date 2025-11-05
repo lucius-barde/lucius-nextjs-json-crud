@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { getUsersDb, mapUserRow } from '../../../db/sqlite';
+
+export const runtime = 'nodejs';
 
 export async function GET() {
   try {
-    const dbPath = path.join(process.cwd(), 'app', 'db', 'users.json');
-    const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-    return NextResponse.json(dbData.users);
+    const db = getUsersDb();
+    const rows = db.prepare('SELECT * FROM users').all();
+    return NextResponse.json(rows.map(mapUserRow));
   } catch (error) {
     console.error('Error fetching users:', error);
     return NextResponse.json(

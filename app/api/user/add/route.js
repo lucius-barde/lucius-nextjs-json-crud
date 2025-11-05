@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
 import bcrypt from 'bcryptjs';
+import { getUsersDb, mapUserRow } from '../../../db/sqlite';
+
+export const runtime = 'nodejs';
 
 export async function POST(request) {
   try {
@@ -15,11 +16,9 @@ export async function POST(request) {
       );
     }
 
-    const dbPath = path.join(process.cwd(), 'app', 'db', 'users.json');
-    const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-
-    const maxId = Math.max(...dbData.users.map(user => user.id), 0);
-    const newId = maxId + 1;
+    const db = getUsersDb();
+    const maxIdRow = db.prepare('SELECT COALESCE(MAX(id), 0) as maxId FROM users').get();
+    const newId = (maxIdRow?.maxId || 0) + 1;
 
     const now = Date.now();
 
@@ -27,24 +26,25 @@ export async function POST(request) {
     const hashedPassword = password
       ? (isBcryptHash(password) ? password : bcrypt.hashSync(String(password), 10))
       : '';
-    const newUser = {
-      id: newId,
+    db.prepare(`
+      INSERT INTO users (id, url, name, description, email, password, role, status, permissions, created, edited)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      newId,
       url,
       name,
-      description: description || '',
+      description || '',
       email,
-      password: hashedPassword,
-      role: role || 'user',
-      status: status || 'active',
-      permissions: Array.isArray(permissions) ? permissions : ['read'],
-      created: now,
-      edited: now
-    };
+      hashedPassword,
+      role || 'user',
+      status || 'active',
+      JSON.stringify(Array.isArray(permissions) ? permissions : ['read']),
+      now,
+      now
+    );
 
-    dbData.users.push(newUser);
-    fs.writeFileSync(dbPath, JSON.stringify(dbData, null, 4));
-
-    return NextResponse.json(newUser, { status: 201 });
+    const inserted = db.prepare('SELECT * FROM users WHERE id = ?').get(newId);
+    return NextResponse.json(mapUserRow(inserted), { status: 201 });
   } catch (error) {
     console.error('Error creating user: ', error);
     return NextResponse.json(

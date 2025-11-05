@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { getPostsDb } from '../../../db/sqlite';
+
+export const runtime = 'nodejs';
 
 export async function GET() {
   try {
-    // Read the database file
-    const dbPath = path.join(process.cwd(), 'app', 'db', 'posts.json');
-    const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-    // Return all posts as JSON
-    return NextResponse.json(dbData.posts);
+    const db = getPostsDb();
+    const rows = db.prepare('SELECT * FROM posts').all();
+    return NextResponse.json(rows);
   } catch (error) {
     console.error('Error fetching posts:', error);
     return NextResponse.json(
@@ -16,4 +15,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-} 
+}

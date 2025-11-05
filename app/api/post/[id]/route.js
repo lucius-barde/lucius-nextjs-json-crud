@@ -1,17 +1,13 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { getPostsDb } from '../../../db/sqlite';
+
+export const runtime = 'nodejs';
 
 export async function GET(request, { params }) {
   try {
     const { id } = params;
-    
-    // Read the database file
-    const dbPath = path.join(process.cwd(), 'app', 'db', 'posts.json');
-    const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-    
-    // Find the post with the matching ID
-    const post = dbData.posts.find(post => post.id === parseInt(id));
+    const db = getPostsDb();
+    const post = db.prepare('SELECT * FROM posts WHERE id = ?').get(parseInt(id));
     
     if (!post) {
       return NextResponse.json(
@@ -20,7 +16,6 @@ export async function GET(request, { params }) {
       );
     }
     
-    // Return the post data as JSON
     return NextResponse.json(post);
     
   } catch (error) {
@@ -46,31 +41,22 @@ export async function PUT(request, { params }) {
       );
     }
     
-    // Read the database file
-    const dbPath = path.join(process.cwd(), 'app', 'db', 'posts.json');
-    const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-    
-    // Find the post with the matching ID
-    const postIndex = dbData.posts.findIndex(post => post.id === parseInt(id));
-    
-    if (postIndex === -1) {
+    const db = getPostsDb();
+    const existing = db.prepare('SELECT * FROM posts WHERE id = ?').get(parseInt(id));
+    if (!existing) {
       return NextResponse.json(
         { error: 'Post not found' },
         { status: 404 }
       );
     }
-    
-    // Update the post
-    dbData.posts[postIndex].name = name;
-    dbData.posts[postIndex].url = url;
-    dbData.posts[postIndex].content = content;
-    dbData.posts[postIndex].edited = Date.now();
-    
-    // Write back to database file
-    fs.writeFileSync(dbPath, JSON.stringify(dbData, null, 4));
-    
-    // Return the updated post
-    return NextResponse.json(dbData.posts[postIndex], { status: 200 });
+    const edited = Date.now();
+    db.prepare(`
+      UPDATE posts
+      SET name = ?, url = ?, content = ?, edited = ?
+      WHERE id = ?
+    `).run(name, url, content, edited, parseInt(id));
+    const after = db.prepare('SELECT * FROM posts WHERE id = ?').get(parseInt(id));
+    return NextResponse.json(after, { status: 200 });
     
   } catch (error) {
     console.error('Error updating post:', error);
@@ -84,29 +70,18 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { id } = params;
-    
-    // Read the database file
-    const dbPath = path.join(process.cwd(), 'app', 'db', 'posts.json');
-    const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-    
-    // Find the post with the matching ID
-    const postIndex = dbData.posts.findIndex(post => post.id === parseInt(id));
-    
-    if (postIndex === -1) {
+    const db = getPostsDb();
+    const existing = db.prepare('SELECT * FROM posts WHERE id = ?').get(parseInt(id));
+    if (!existing) {
       return NextResponse.json(
         { error: 'Post not found' },
         { status: 404 }
       );
     }
     
-    // Remove the post from the array
-    const deletedpost = dbData.posts[postIndex];
-    dbData.posts.splice(postIndex, 1);
+    const deletedpost = existing;
+    db.prepare('DELETE FROM posts WHERE id = ?').run(parseInt(id));
     
-    // Write back to database file
-    fs.writeFileSync(dbPath, JSON.stringify(dbData, null, 4));
-    
-    // Return success message
     return NextResponse.json({ 
       message: 'Post deleted successfully',
       deletedpost: deletedpost 
