@@ -34,15 +34,14 @@ const PostList = () => {
   }
 
 
-  if (loading) return <section id="blog"><div>Loading posts...</div></section>;
-  if (error) return <section id="blog"><div className="text-red-500">Error: {error}</div></section>;
+  //if (loading) return <section id="blog"><div>Loading posts...</div></section>;
+  if (error) return <section id="blog"><div className="text-red-500 lucius-dynamic-content">Error: {error}</div></section>;
 
   return (
    <section id="blog">
       <div className="w-full overflow-x-auto">
-        <h2 className="text-2xl font-bold">Latest posts</h2>
     {posts.map(post => (
-         <article key={post.id} className='mt-8 mb-8'>
+         <article key={post.id} className='mt-8 mb-8 lucius-dynamic-content'>
          <h3 className='text-xl font-semibold mb-2'><a href={`/post/${post.id}`}>{post.name}</a></h3>
          <p className='text-sm text-gray-600'>{formatDate(post.created)}</p> 
  

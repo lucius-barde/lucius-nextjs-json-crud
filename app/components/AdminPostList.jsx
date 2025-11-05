@@ -31,11 +31,11 @@ const AdminPostList = () => {
     return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
   }
 
-  if (loading) return <div>Loading posts...</div>;
-  if (error) return <div className="text-red-500">Error: {error}</div>;
+  //if (loading) return <div>Loading posts...</div>;
+  if (error) return <div className="text-red-500 lucius-dynamic-content">Error: {error}</div>;
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-auto lucius-dynamic-content">
       <h2 className="text-2xl font-semibold mb-4">Posts</h2>
       <table className="min-w-full border border-gray-300">
         <thead>

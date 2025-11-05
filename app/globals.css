@@ -41,9 +41,24 @@ main{
   border: 1px solid var(--dev-borders);
 }
 
-section{
+article{
   background-color: var(--background-tertiary);
   border: 1px solid var(--dev-borders);
   padding: 8px;
 }
 
+.lucius-dynamic-content{
+  animation: luciusFadeIn 1s ease-in-out;
+}
+
+@keyframes luciusFadeIn {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
