@@ -1,4 +1,4 @@
-# NextJS JSON CRUD
+# NextJS CRUD by Lucius
 
 An app with a restful CRUD api, on SQLite databases. Made with Cursor editor.
 
