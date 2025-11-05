@@ -1,0 +1,51 @@
+{
+    "users": [
+        {
+            "id": 1,
+            "url": "lucius",
+            "name": "Lucius",
+            "description": "demo password: lucius12345",
+            "email": "lucius.json@mailinator.com",
+            "password": "$2a$10$ip1Rj1YAF4pe2gxZ1SylxOX123O8G8HLaku0QQ4cFQtC0Aq1.UDeW",
+            "role": "admin",
+            "status": "active",
+            "permissions": [
+                "read"
+            ],
+            "created": 1750257526000,
+            "edited": 1762346747828
+        },
+        {
+            "id": 2,
+            "url": "waldo",
+            "name": "Waldo",
+            "description": "demo password: waldo12345",
+            "email": "waldo.json@mailinator.com",
+            "password": "$2a$10$mnls9d4jfNeIIQAKRXV4Pu5PQrZ.D4xb3cyg53BHvivI5jmnVKrnK",
+            "role": "user",
+            "status": "active",
+            "permissions": [
+                "read"
+            ],
+            "created": 1750257526000,
+            "edited": 1762346736950
+        },
+        {
+            "id": 3,
+            "url": "fred",
+            "name": "Fred",
+            "description": "My description",
+            "email": "fred.json@mailinator.com",
+            "password": "876c9556648fafe6c8bd15438f08bd8f",
+            "role": "user",
+            "status": "active",
+            "permissions": [
+                "read",
+                "write",
+                "delete"
+            ],
+            "created": 1750257526000,
+            "edited": 1755097232556
+        }
+    ]
+}

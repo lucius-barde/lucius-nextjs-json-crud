@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link';
 import AdminPostList from './AdminPostList';
+import AdminUserList from './AdminUserList';
 
 const AdminPageMain = () => {
  
@@ -11,10 +12,14 @@ const AdminPageMain = () => {
       <ul>
         <li>
           <Link className="bg-blue-500 text-white rounded-md p-2" href="/admin/post/create">Create Post</Link>
+          &nbsp;
+          <Link className="bg-blue-500 text-white rounded-md p-2" href="/admin/user/create">Create User</Link>
         </li>
       </ul>
 
       <AdminPostList />
+
+      <AdminUserList />
      
     </main>
   );

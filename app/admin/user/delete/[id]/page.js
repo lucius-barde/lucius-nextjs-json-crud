@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-const DeletePostPage = ({ params }) => {
-  const [post, setPost] = useState(null);
+const DeleteUserPage = ({ params }) => {
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -12,31 +12,28 @@ const DeletePostPage = ({ params }) => {
   const router = useRouter();
 
   useEffect(() => {
-    async function fetchPost() {
+    async function fetchUser() {
       try {
-        const res = await fetch(`/api/post/${params.id}`);
-        if (!res.ok) throw new Error('Failed to fetch post');
+        const res = await fetch(`/api/user/${params.id}`);
+        if (!res.ok) throw new Error('Failed to fetch user');
         const data = await res.json();
-        setPost(data);
+        setUser(data);
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
     }
-    fetchPost();
+    fetchUser();
   }, [params.id]);
 
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      const res = await fetch(`/api/post/${params.id}`, {
+      const res = await fetch(`/api/user/${params.id}`, {
         method: 'DELETE',
       });
-      
-      if (!res.ok) throw new Error('Failed to delete post');
-      
-      // Redirect to admin dashboard after successful deletion
+      if (!res.ok) throw new Error('Failed to delete user');
       router.push('/admin');
     } catch (err) {
       setError(err.message);
@@ -49,14 +46,14 @@ const DeletePostPage = ({ params }) => {
 
   if (loading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   if (error) return <div className="flex justify-center items-center min-h-screen text-red-500">Error: {error}</div>;
-  if (!post) return <div className="flex justify-center items-center min-h-screen">Post not found</div>;
+  if (!user) return <div className="flex justify-center items-center min-h-screen">User not found</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Delete Post</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Delete User</h1>
             <Link 
               href="/admin" 
               className="bg-gray-500 text-white rounded-md px-4 py-2 hover:bg-gray-600 transition-colors"
@@ -75,38 +72,30 @@ const DeletePostPage = ({ params }) => {
               <div className="ml-3">
                 <h3 className="text-lg font-medium text-red-800">Warning</h3>
                 <p className="text-sm text-red-700">
-                  This action cannot be undone. This will permanently delete the post.
+                  This action cannot be undone. This will permanently delete the user.
                 </p>
               </div>
             </div>
           </div>
 
           <div className="bg-gray-50 rounded-lg p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-4">Post Details</h2>
+            <h2 className="text-xl font-semibold mb-4">User Details</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">ID</label>
-                <p className="mt-1 text-sm text-gray-900">{post.id}</p>
+                <p className="mt-1 text-sm text-gray-900">{user.id}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Name</label>
-                <p className="mt-1 text-sm text-gray-900">{post.name}</p>
+                <p className="mt-1 text-sm text-gray-900">{user.name}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">URL</label>
-                <p className="mt-1 text-sm text-gray-900">{post.url}</p>
+                <p className="mt-1 text-sm text-gray-900">{user.url}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Created</label>
-                <p className="mt-1 text-sm text-gray-900">
-                  {new Date(post.created).toLocaleString()}
-                </p>
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700">Content Preview</label>
-                <p className="mt-1 text-sm text-gray-900">
-                  {post.content.length > 200 ? post.content.slice(0, 200) + '...' : post.content}
-                </p>
+                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <p className="mt-1 text-sm text-gray-900">{user.email}</p>
               </div>
             </div>
           </div>
@@ -120,15 +109,14 @@ const DeletePostPage = ({ params }) => {
             </Link>
             <button
               onClick={openModal}
-              className="cursor-pointer bg-red-600 text-white rounded-md px-6 py-2 hover:bg-red-700 transition-colors"
+              className="cursor-pointer  bg-red-600 text-white rounded-md px-6 py-2 hover:bg-red-700 transition-colors"
             >
-              Delete Post
+              Delete User
             </button>
           </div>
         </div>
       </div>
 
-      {/* Confirmation Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
@@ -142,11 +130,9 @@ const DeletePostPage = ({ params }) => {
                 <h3 className="text-lg font-medium text-gray-900">Confirm Deletion</h3>
               </div>
             </div>
-            
             <p className="text-sm text-gray-500 mb-6">
-              Are you sure you want to delete "{post.name}"? This action cannot be undone.
+              Are you sure you want to delete "{user.name}"? This action cannot be undone.
             </p>
-            
             <div className="flex justify-end space-x-3">
               <button
                 onClick={closeModal}
@@ -158,19 +144,9 @@ const DeletePostPage = ({ params }) => {
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="cursor-pointer bg-red-600 text-white rounded-md px-4 py-2 hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center"
+                className="cursor-pointer bg-red-600 text-white rounded-md px-4 py-2 hover:bg-red-700 transition-colors disabled:opacity-50"
               >
-                {deleting ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Deleting...
-                  </>
-                ) : (
-                  'Delete'
-                )}
+                {deleting ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>
@@ -180,4 +156,6 @@ const DeletePostPage = ({ params }) => {
   );
 };
 
-export default DeletePostPage;
+export default DeleteUserPage;
+
+
