@@ -14,7 +14,12 @@ function ensureDirectoryExists(targetPath) {
 
 function openDatabase(dbFilePath) {
   ensureDirectoryExists(dbFilePath);
-  return new Database(dbFilePath, { fileMustExist: false });
+  const db = new Database(dbFilePath, { fileMustExist: false });
+  // Ensure foreign keys enforcement is enabled
+  try {
+    db.pragma('foreign_keys = ON');
+  } catch {}
+  return db;
 }
 
 function initializeUsersSchema(db) {
@@ -42,10 +47,50 @@ function initializePostsSchema(db) {
       url TEXT NOT NULL,
       name TEXT NOT NULL,
       content TEXT NOT NULL,
+      user_id INTEGER NULL,
       created INTEGER NOT NULL,
       edited INTEGER NOT NULL
     );
   `);
+}
+
+function migratePostsAddUserId(db) {
+  // Check if user_id already exists
+  try {
+    const columns = db.prepare(`PRAGMA table_info(posts);`).all();
+    const hasUserId = columns.some(c => String(c.name) === 'user_id');
+    if (hasUserId) return;
+  } catch {
+    return;
+  }
+
+  // Recreate posts table with user_id and FK, preserving data
+  const inTxn = db.transaction(() => {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS posts_new (
+        id INTEGER PRIMARY KEY,
+        url TEXT NOT NULL,
+        name TEXT NOT NULL,
+        content TEXT NOT NULL,
+        user_id INTEGER NULL,
+        created INTEGER NOT NULL,
+        edited INTEGER NOT NULL
+      );
+    `);
+
+    // Copy data from old posts; user_id defaults to NULL
+    db.exec(`
+      INSERT INTO posts_new (id, url, name, content, user_id, created, edited)
+      SELECT id, url, name, content, NULL as user_id, created, edited FROM posts;
+    `);
+
+    db.exec(`DROP TABLE posts;`);
+    db.exec(`ALTER TABLE posts_new RENAME TO posts;`);
+  });
+
+  try {
+    inTxn();
+  } catch {}
 }
 
 function seedUsersIfEmpty(db) {
@@ -90,8 +135,8 @@ function seedPostsIfEmpty(db) {
     const parsed = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
     const posts = Array.isArray(parsed?.posts) ? parsed.posts : [];
     const insert = db.prepare(`
-      INSERT INTO posts (id, url, name, content, created, edited)
-      VALUES (@id, @url, @name, @content, @created, @edited)
+      INSERT INTO posts (id, url, name, content, user_id, created, edited)
+      VALUES (@id, @url, @name, @content, @user_id, @created, @edited)
     `);
     const tx = db.transaction((rows) => {
       for (const p of rows) {
@@ -100,6 +145,7 @@ function seedPostsIfEmpty(db) {
           url: p.url || '',
           name: p.name || '',
           content: p.content || '',
+          user_id: typeof p.user_id === 'number' ? p.user_id : null,
           created: Number(p.created) || Date.now(),
           edited: Number(p.edited) || Number(p.created) || Date.now()
         });
@@ -125,6 +171,7 @@ export function getPostsDb() {
     const dbPath = path.join(process.cwd(), 'app', 'db', 'posts.db');
     const db = openDatabase(dbPath);
     initializePostsSchema(db);
+    migratePostsAddUserId(db);
     seedPostsIfEmpty(db);
     postsDbSingleton = db;
   }

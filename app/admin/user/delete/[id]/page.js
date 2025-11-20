@@ -131,7 +131,7 @@ const DeleteUserPage = ({ params }) => {
               </div>
             </div>
             <p className="text-sm text-gray-500 mb-6">
-              Are you sure you want to delete "{user.name}"? This action cannot be undone.
+              Are you sure you want to delete &quot;{user.name}&quot;? This action cannot be undone.
             </p>
             <div className="flex justify-end space-x-3">
               <button

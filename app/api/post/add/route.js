@@ -6,7 +6,7 @@ export const runtime = 'nodejs';
 export async function POST(request) {
   try {
     const requestBody = await request.json();
-    const { url, name, content } = requestBody;
+    const { url, name, content, user_id } = requestBody;
     
     // Validate that url is provided
     if (!url) {
@@ -26,14 +26,15 @@ export async function POST(request) {
       url: url,
       name: name,
       content: content,
+      user_id: typeof user_id === 'number' ? user_id : null,
       created: Date.now(),
       edited: Date.now()
     };
     
     db.prepare(`
-      INSERT INTO posts (id, url, name, content, created, edited)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).run(newId, url, name, content, newpost.created, newpost.edited);
+      INSERT INTO posts (id, url, name, content, user_id, created, edited)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(newId, url, name, content, newpost.user_id, newpost.created, newpost.edited);
     
     // Return the created post
     return NextResponse.json(newpost, { status: 201 });
