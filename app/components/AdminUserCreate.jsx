@@ -1,7 +1,9 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 const AdminUserCreate = () => {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     url: '',
@@ -14,6 +16,21 @@ const AdminUserCreate = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    async function fetchSession() {
+      try {
+        const res = await fetch('/api/session');
+        if (res.ok) {
+          const data = await res.json();
+          setCurrentUser(data.user || null);
+        }
+      } finally {
+        setAuthLoading(false);
+      }
+    }
+    fetchSession();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -61,8 +78,27 @@ const AdminUserCreate = () => {
     }
   };
 
+  if (authLoading) {
+    return (
+      <main className="lucius-site-width-wrapper flex flex-col gap-[32px] p-8 items-center sm:items-start flex-1">
+        <h1 className="text-4xl font-bold">Create User</h1>
+        <div className="lucius-loader" aria-label="Checking permissions..." role="status"><div className="lucius-loader-element"></div></div>
+
+      </main>
+    );
+  }
+
+  if (currentUser?.role !== 'admin') {
+    return (
+      <main className="lucius-site-width-wrapper flex flex-col gap-[32px] p-8 items-center sm:items-start flex-1">
+        <h1 className="text-4xl font-bold">Create User</h1>
+        <div className="p-4 rounded-md bg-red-100 text-red-700">Only admins can create users.</div>
+      </main>
+    );
+  }
+
   return (
-    <main className="flex flex-col gap-[32px] p-8 items-center sm:items-start flex-1">
+    <main className="lucius-site-width-wrapper flex flex-col gap-[32px] p-8 items-center sm:items-start flex-1">
       <h1 className="text-4xl font-bold">Create User</h1>
 
       {message && (
@@ -76,11 +112,11 @@ const AdminUserCreate = () => {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-md">
         <div>
           <label htmlFor="name">Name</label><br />
-          <input 
-            className="border border-gray-300 rounded-md p-2 w-full" 
-            type="text" 
-            id="name" 
-            name="name" 
+          <input
+            className="border border-gray-300 rounded-md p-2 w-full"
+            type="text"
+            id="name"
+            name="name"
             value={formData.name}
             onChange={handleInputChange}
             required
@@ -88,11 +124,11 @@ const AdminUserCreate = () => {
         </div>
         <div>
           <label htmlFor="url">URL</label><br />
-          <input 
-            className="text-sm border border-gray-300 rounded-md p-2 w-full" 
-            type="text" 
-            id="url" 
-            name="url" 
+          <input
+            className="text-sm border border-gray-300 rounded-md p-2 w-full"
+            type="text"
+            id="url"
+            name="url"
             value={formData.url}
             onChange={handleInputChange}
             required
@@ -100,33 +136,33 @@ const AdminUserCreate = () => {
         </div>
         <div>
           <label htmlFor="email">Email</label><br />
-          <input 
-            className="text-sm border border-gray-300 rounded-md p-2 w-full" 
-            type="email" 
-            id="email" 
-            name="email" 
+          <input
+            className="text-sm border border-gray-300 rounded-md p-2 w-full"
+            type="email"
+            id="email"
+            name="email"
             value={formData.email}
             onChange={handleInputChange}
             required
           />
         </div>
         <div>
-          <label htmlFor="description">Description</label><br />  
-          <textarea 
-            className="border border-gray-300 rounded-md p-2 w-full h-24" 
-            id="description" 
-            name="description" 
+          <label htmlFor="description">Description</label><br />
+          <textarea
+            className="border border-gray-300 rounded-md p-2 w-full h-24"
+            id="description"
+            name="description"
             value={formData.description}
             onChange={handleInputChange}
           />
         </div>
         <div>
           <label htmlFor="password">Password</label><br />
-          <input 
-            className="text-sm border border-gray-300 rounded-md p-2 w-full" 
-            type="password" 
-            id="password" 
-            name="password" 
+          <input
+            className="text-sm border border-gray-300 rounded-md p-2 w-full"
+            type="password"
+            id="password"
+            name="password"
             value={formData.password}
             onChange={handleInputChange}
             placeholder="Leave blank to set later"
@@ -194,19 +230,17 @@ const AdminUserCreate = () => {
             </label>
           </div>
         </div>
-        
-        <button 
-          className="cursor-pointer bg-blue-500 text-white rounded-md p-2 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed" 
+
+        <button
+          className="cursor-pointer bg-blue-500 text-white rounded-md p-2 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
           type="submit"
           disabled={isSubmitting}
         >
           {isSubmitting ? 'Creating...' : 'Create User'}
         </button>
-      </form>  
+      </form>
     </main>
   );
 }
 
 export default AdminUserCreate
-
-

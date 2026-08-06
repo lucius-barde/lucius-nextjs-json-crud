@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getPostsDb } from '../../../db/sqlite';
+import { forbiddenResponse, getCurrentUser, isAdmin, unauthorizedResponse } from '../../auth';
 
 export const runtime = 'nodejs';
 
@@ -29,6 +30,9 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
+    const currentUser = getCurrentUser(request);
+    if (!currentUser) return unauthorizedResponse();
+
     const { id } = params;
     const requestBody = await request.json();
     const { name, url, content } = requestBody;
@@ -48,6 +52,9 @@ export async function PUT(request, { params }) {
         { error: 'Post not found' },
         { status: 404 }
       );
+    }
+    if (!isAdmin(currentUser) && existing.user_id !== currentUser.id) {
+      return forbiddenResponse();
     }
     const edited = Date.now();
     db.prepare(`
@@ -69,6 +76,9 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
+    const currentUser = getCurrentUser(request);
+    if (!currentUser) return unauthorizedResponse();
+
     const { id } = params;
     const db = getPostsDb();
     const existing = db.prepare('SELECT * FROM posts WHERE id = ?').get(parseInt(id));
@@ -77,6 +87,9 @@ export async function DELETE(request, { params }) {
         { error: 'Post not found' },
         { status: 404 }
       );
+    }
+    if (!isAdmin(currentUser) && existing.user_id !== currentUser.id) {
+      return forbiddenResponse();
     }
     
     const deletedpost = existing;

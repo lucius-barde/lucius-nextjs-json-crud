@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { getUsersDb, mapUserRow } from '../../../db/sqlite';
+import { forbiddenResponse, getCurrentUser, isAdmin, unauthorizedResponse } from '../../auth';
 
 export const runtime = 'nodejs';
 
 export async function POST(request) {
   try {
+    const currentUser = getCurrentUser(request);
+    if (!currentUser) return unauthorizedResponse();
+    if (!isAdmin(currentUser)) return forbiddenResponse();
+
     const requestBody = await request.json();
     const { url, name, email, description, password, role, status, permissions } = requestBody;
 

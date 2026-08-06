@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { getCurrentUser, safeUser } from '../auth';
 
 export async function GET(request) {
-  const session = request.cookies.get('session');
-  return NextResponse.json({ loggedIn: !!session });
+  const user = getCurrentUser(request);
+  return NextResponse.json({ loggedIn: !!user, user: safeUser(user) });
 } 

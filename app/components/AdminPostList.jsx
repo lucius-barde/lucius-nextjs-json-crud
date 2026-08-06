@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-const AdminPostList = () => {
+const AdminPostList = ({ currentUser }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,13 +31,17 @@ const AdminPostList = () => {
     return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
   }
 
+  const isAdmin = currentUser?.role === 'admin';
+  const visiblePosts = posts.filter(post => isAdmin || post.user_id === currentUser?.id);
+
   //if (loading) return <div>Loading posts...</div>;
   if (error) return <div className="text-red-500 lucius-dynamic-content">Error: {error}</div>;
 
   return (
     <div className="w-full overflow-x-auto lucius-dynamic-content">
       <h2 className="text-2xl font-semibold mb-4">Posts</h2>
-      <table className="min-w-full border border-gray-300">
+      <div className="admin-table-wrapper">
+        <table className=" min-w-full border border-gray-300">
         <thead>
           <tr className="bg-gray-100">
             <th className="px-4 py-2 border">ID</th>
@@ -50,7 +54,7 @@ const AdminPostList = () => {
           </tr>
         </thead>
         <tbody>
-          {posts.map(post => (
+          {visiblePosts.map(post => (
             <tr key={post.id} className="border-t">
               <td className="px-4 py-2 border text-center">{post.id}</td>
               <td className="px-4 py-2 border">{post.name}</td>
@@ -65,7 +69,8 @@ const AdminPostList = () => {
             </tr>
           ))}
         </tbody>
-      </table>
+        </table>
+      </div>
     </div>
   );
 }

@@ -7,6 +7,7 @@ const DeletePostPage = ({ params }) => {
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [canDelete, setCanDelete] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
@@ -14,9 +15,14 @@ const DeletePostPage = ({ params }) => {
   useEffect(() => {
     async function fetchPost() {
       try {
+        const sessionRes = await fetch('/api/session');
+        const sessionData = sessionRes.ok ? await sessionRes.json() : null;
+        const currentUser = sessionData?.user || null;
+
         const res = await fetch(`/api/post/${params.id}`);
         if (!res.ok) throw new Error('Failed to fetch post');
         const data = await res.json();
+        setCanDelete(currentUser?.role === 'admin' || data.user_id === currentUser?.id);
         setPost(data);
       } catch (err) {
         setError(err.message);
@@ -50,6 +56,7 @@ const DeletePostPage = ({ params }) => {
   if (loading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   if (error) return <div className="flex justify-center items-center min-h-screen text-red-500">Error: {error}</div>;
   if (!post) return <div className="flex justify-center items-center min-h-screen">Post not found</div>;
+  if (!canDelete) return <div className="flex justify-center items-center min-h-screen text-red-500">You can only delete your own posts.</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

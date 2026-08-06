@@ -14,6 +14,14 @@ const DeleteUserPage = ({ params }) => {
   useEffect(() => {
     async function fetchUser() {
       try {
+        const sessionRes = await fetch('/api/session');
+        const sessionData = sessionRes.ok ? await sessionRes.json() : null;
+        const currentUserIsAdmin = sessionData?.user?.role === 'admin';
+
+        if (!currentUserIsAdmin) {
+          throw new Error('Only admins can delete users');
+        }
+
         const res = await fetch(`/api/user/${params.id}`);
         if (!res.ok) throw new Error('Failed to fetch user');
         const data = await res.json();

@@ -5,7 +5,7 @@ export default function Nav() {
   const session = cookies().get('session');
 
   return (
-    <nav className="p-8">
+    <nav className="p-8 flex">
       <ul className="flex items-left gap-[24px] w-full justify-center">
         <li><a href="/">Home</a></li>
         <li><a href="/admin">Admin</a></li>

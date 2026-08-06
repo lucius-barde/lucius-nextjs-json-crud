@@ -7,7 +7,7 @@ const SinglePost = () => {
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-  
+
     // Copy-pasted from AdminPostList.jsx
     useEffect(() => {
       async function fetchPost() {
@@ -35,19 +35,19 @@ const SinglePost = () => {
     }
 
 
-    if (loading) return <main className="flex flex-col gap-[32px] p-8 items-center sm:items-start flex-1"><div>Loading...</div></main>;
-    if (error) return <main className="flex flex-col gap-[32px] p-8 items-center sm:items-start flex-1"><div>Error: {error}</div></main>;
-    if (!post) return <main className="flex flex-col gap-[32px] p-8 items-center sm:items-start flex-1"><div>This post does not exist.</div></main>;
+    if (loading) return <main className="lucius-site-width-wrapper p-8 flex-1"><div className="lucius-loader" aria-label="Loading post..." role="status"><div className="lucius-loader-element"></div></div></main>;
+    if (error) return <main className="lucius-site-width-wrapper p-8 flex-1"><div>Error: {error}</div></main>;
+    if (!post) return <main className="lucius-site-width-wrapper p-8 flex-1"><div>This post does not exist.</div></main>;
 
     return(
-    
-        <main className="flex flex-col gap-[32px] p-8 items-center sm:items-start flex-1">
+
+        <main className="lucius-site-width-wrapper flex-1">
             <section id="blog">
             <div className="w-full overflow-x-auto">
-                    <article className='mt-8 mb-8'>
+                    <article className='single-post m-8'>
                         <h1 className='text-4xl font-bold'>{post.name}</h1>
-                        <p className='text-sm text-gray-600'>{formatDate(post.created)}</p> 
-                        <p className=''>{post.content}</p> 
+                        <p className='text-sm text-gray-600 mb-4'>{formatDate(post.created)}</p>
+                        <p className=''>{post.content}</p>
                     </article>
                 </div>
             </section>

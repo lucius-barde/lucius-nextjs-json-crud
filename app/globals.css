@@ -5,7 +5,7 @@
   --background-secondary: #f0f0f0;
   --background-tertiary: #fff;
   --foreground: #171717;
-  --dev-borders: #888;
+  --borders: #f0f0f0;
 }
 
 @theme inline {
@@ -24,7 +24,7 @@
 }
 
 body {
-  background: var(--background);
+  background: var(--body-background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -33,23 +33,86 @@ body {
 
 
 body{
-  background-color: var(--background);
+  background-color: var(--background-secondary);
+}
+
+header, main, footer{
+	background-color: var(--background);
+}
+
+h2{
+	font-size: 1.3em;
+	font-weight: bold;
+	margin-left: 8px;
+}
+
+h3{
+	font-size: 1.15em;
+	font-weight: bold;
+	font-style: italic;
+
+}
+
+@media screen and (min-width: 1180px){
+    .lucius-site-width-wrapper{
+    	width:1180px;
+    	margin:auto;
+    }
 }
 
 main{
-  background-color: var(--background-secondary);
-  border: 1px solid var(--dev-borders);
+  background-color: var(--background-tertiary);
 }
 
-article{
-  background-color: var(--background-tertiary);
-  border: 1px solid var(--dev-borders);
-  padding: 8px;
+#lucius-logo{
+  width:64px;
+  height:64px;
+  background-color:#ffffff;
+  border-radius: 50%;
 }
+article.post{
+	border: 1px solid var(--borders);
+	border-radius: 8px;
+	padding:8px;
+}
+
+div.admin-table-wrapper{
+    max-height:300px;
+    overflow-y:auto;
+}
+
+button{
+    cursor:pointer;
+}
+
+
 
 .lucius-dynamic-content{
-  animation: luciusFadeIn 1s ease-in-out;
+  animation: luciusFadeIn 0.5s ease-in-out;
 }
+.lucius-loader{
+	overflow:hidden;
+	padding:20px;
+}
+.lucius-loader-element {
+	margin:auto;
+  width: 40px;
+  padding: 8px;
+  aspect-ratio: 1;
+  height:40px;
+  border-radius: 50%;
+  opacity:0.3;
+  background: var(--foreground);
+  --_m:
+    conic-gradient(#0000 10%,#000),
+    linear-gradient(#000 0 0) content-box;
+  -webkit-mask: var(--_m);
+          mask: var(--_m);
+  -webkit-mask-composite: source-out;
+          mask-composite: subtract;
+  animation: l3 1s infinite linear;
+}
+@keyframes l3 {to{transform: rotate(1turn)}}
 
 @keyframes luciusFadeIn {
   0% {
